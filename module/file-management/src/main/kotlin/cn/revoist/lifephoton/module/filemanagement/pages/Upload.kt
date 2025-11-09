@@ -16,7 +16,6 @@ import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
 import io.ktor.utils.io.*
 import kotlinx.io.readByteArray
-import java.io.File
 
 /**
  * @author 6hisea
@@ -44,13 +43,11 @@ object Upload : RoutePage("upload",false,false) {
                     call.error("limit size: <= $limitSize")
                     return@forEachPart
                 }else{
-                    val code = System.currentTimeMillis().toString() + "-" + Tools.generateCode()
-                    FileManagementAPI.write(name?:"Unknown",user,true, FileManagement){
-                        it.writeBytes(file)
-                    }
                     call.ok(
                         hashMapOf(
-                            "path" to code
+                            "path" to FileManagementAPI.write(name?:"Unknown",user,true, FileManagement){
+                                it.writeBytes(file)
+                            }
                         )
                     )
                 }

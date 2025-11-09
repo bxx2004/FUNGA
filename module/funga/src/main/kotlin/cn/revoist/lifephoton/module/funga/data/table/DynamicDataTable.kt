@@ -13,6 +13,7 @@ import org.ktorm.schema.varchar
  * @date  2025/8/27 14:08
  * @description: None
  */
+
 object DynamicDataTable : Table<Nothing>("dynamic_data") {
     val id = long("id").primaryKey()
     val content = varchar("content")

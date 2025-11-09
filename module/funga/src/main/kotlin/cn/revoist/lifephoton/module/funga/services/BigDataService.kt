@@ -37,15 +37,24 @@ object BigDataService {
         val data = FungaPlugin.dataManager.useDatabase()
             .maps(DynamicDataTable){
                 where {
-                    DynamicDataTable.id eq userId
+                    DynamicDataTable.user_id eq userId
                 }
             }.firstOrNull()
         if (data != null) return data
-        return FungaPlugin.dataManager.useDatabase().first(DynamicDataTable){
+        val fir =  FungaPlugin.dataManager.useDatabase().first(DynamicDataTable){
             where {
                 DynamicDataTable.user_id eq -1
             }
         }
+        val a = fir.get("id").toString().toLong()
+        val b = fir.get("user_id").toString().toLong()
+        FungaPlugin.dataManager.useDatabase().update(DynamicDataTable){
+            set(DynamicDataTable.user_id,b)
+            where {
+                DynamicDataTable.id eq a
+            }
+        }
+        return fir
     }
     fun hasNext():Boolean{
         return FungaPlugin.dataManager.useDatabase().sequenceOf(DynamicDataTable).count() > 0

@@ -34,6 +34,7 @@ data class NormalPage(val pagination:Int,val allPagination:Int,val data:List<Any
 
 data class DynamicPageInformation(
     val data:List<Any?>,
+    val allPages:Int,
     val pre:Int = -1,
     val next:Int = -1,
 )
@@ -41,7 +42,6 @@ data class DynamicPageInformation(
 data class DynamicPage(
     val size: Int,
     val session:String,
-    val lock:Boolean,
     val func:(pagination: Int,size: Int) -> DynamicPageInformation
 ):Page{
     override fun toResponse():PagingPayloadResponse<*>{
@@ -54,7 +54,7 @@ data class DynamicPage(
         val data = generator.data
         val pre = generator.pre
         val next = generator.next
-        return PagingPayloadResponse(true,"success",pre,next,index,session,data)
+        return PagingPayloadResponse(true,"success",pre,next,generator.allPages,session,data)
     }
 }
 

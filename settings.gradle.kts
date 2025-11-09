@@ -7,3 +7,5 @@ include("module:mating-type-imputation")
 include("tester")
 include("module:funga")
 findProject(":module:funga")?.name = "funga"
+
+include("module:announcement")

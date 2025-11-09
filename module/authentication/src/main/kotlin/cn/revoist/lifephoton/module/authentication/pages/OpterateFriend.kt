@@ -83,7 +83,7 @@ object OpterateFriend {
     }
     @Route(GET)
     @Api("获取朋友")
-    suspend fun getFriends(call:RoutingCall) {
+    suspend fun get(call:RoutingCall) {
         call.match {
             isLogin()
         }.then {

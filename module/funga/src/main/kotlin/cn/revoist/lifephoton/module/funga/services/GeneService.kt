@@ -13,7 +13,6 @@ import cn.revoist.lifephoton.module.funga.tools.asFungaId
 import cn.revoist.lifephoton.module.funga.tools.asSymbol
 import cn.revoist.lifephoton.module.funga.tools.tryMapping
 
-import cn.revoist.lifephoton.plugin.data.buildWhere
 import cn.revoist.lifephoton.plugin.data.maps
 import cn.revoist.lifephoton.plugin.data.processor.MergeData
 import cn.revoist.lifephoton.plugin.data.processor.join
@@ -63,7 +62,7 @@ object GeneService {
         if (allGenes.isEmpty()) return HashMap()
         val degrees = HashMap<String,Int>()
         allGenes.forEach {
-            degrees[it.asSymbol(db)] = pgr.findDegree(it)-1
+            degrees[it.asSymbol(db)] = pgr.findDegree(it)
         }
         return hashMapOf(
             "interactions" to FungaPlugin.dataManager.useDatabase(db)

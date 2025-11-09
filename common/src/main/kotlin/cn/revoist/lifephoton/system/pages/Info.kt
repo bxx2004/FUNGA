@@ -6,16 +6,12 @@ import cn.revoist.lifephoton.plugin.getPlugins
 import cn.revoist.lifephoton.plugin.route.*
 import cn.revoist.lifephoton.plugin.route.Route
 import io.ktor.server.routing.*
-import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.put
-import kotlinx.serialization.json.putJsonArray
-
 /**
  * @author 6hisea
  * @date  2025/1/18 15:51
  * @description: None
  */
-@RouteContainer("system","info")
+@RouteContainer("lifephoton","info")
 object Info{
     @Route(GET)
     @Api("获取系统的元信息")

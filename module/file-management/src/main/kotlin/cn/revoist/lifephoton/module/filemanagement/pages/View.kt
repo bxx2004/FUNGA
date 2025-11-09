@@ -2,6 +2,7 @@ package cn.revoist.lifephoton.module.filemanagement.pages
 
 import cn.revoist.lifephoton.ktors.UserSession
 import cn.revoist.lifephoton.module.authentication.data.Tools
+import cn.revoist.lifephoton.module.authentication.data.table.hasFriend
 import cn.revoist.lifephoton.module.authentication.isLogin
 import cn.revoist.lifephoton.module.filemanagement.FileManagement
 import cn.revoist.lifephoton.module.filemanagement.FileManagementTable
@@ -62,7 +63,7 @@ object View : RoutePage("view"){
                 call.error("please login!")
                 return
             }
-            if (user.group == "admin" || user.id == file.user_id || file.visitor.split(",").contains(user.id.toString())){
+            if (user.group == "admin" || user.id == file.user_id || file.user_id.hasFriend(user.id)){
                 call.respondFile(File(file.path))
             }else{
                 call.error("You don't have permission!")

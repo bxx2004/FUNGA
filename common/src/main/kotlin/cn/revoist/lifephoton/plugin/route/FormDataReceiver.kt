@@ -23,3 +23,17 @@ suspend fun RoutingCall.receiveMultiData(limit:Long=-1,func:suspend (data:HashMa
     }
     func(result)
 }
+suspend fun RoutingCall.sandbox(func:suspend ()->Any?){
+    try {
+        val res = func()
+        if (res != null && res != Unit){
+            ok(res)
+        }else{
+            ok("success")
+        }
+
+    }catch (e:Exception){
+        error("Exception: ${e.message}")
+        e.printStackTrace()
+    }
+}

@@ -1,14 +1,9 @@
 package cn.revoist.lifephoton.module.authentication
 
-import cn.revoist.lifephoton.Booster
 import cn.revoist.lifephoton.plugin.Plugin
 import cn.revoist.lifephoton.plugin.anno.AutoUse
 import cn.revoist.lifephoton.plugin.event.events.AuthenticationEvent
 import cn.revoist.lifephoton.plugin.event.registerListener
-import cn.revoist.lifephoton.plugin.paging
-import cn.revoist.lifephoton.plugin.requestBody
-import cn.revoist.lifephoton.plugin.route.ok
-import io.ktor.http.*
 
 /**
  * @author 6hisea

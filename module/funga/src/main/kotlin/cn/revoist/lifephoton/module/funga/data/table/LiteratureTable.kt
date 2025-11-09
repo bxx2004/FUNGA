@@ -1,9 +1,8 @@
 package cn.revoist.lifephoton.module.funga.data.table
 
 import org.ktorm.schema.Table
-import org.ktorm.schema.boolean
-import org.ktorm.schema.double
 import org.ktorm.schema.int
+import org.ktorm.schema.long
 import org.ktorm.schema.varchar
 
 /**
@@ -13,8 +12,8 @@ import org.ktorm.schema.varchar
  */
 object LiteratureTable : Table<Nothing>("literatures") {
     val id = int("id").primaryKey()
-    val user_id = varchar("user_id")
+    val user_id = long("user_id")
     val title = varchar("title")
-    val visible = boolean("visible")
     val citation = varchar("citation")
+    val upload_time = long("upload_time")
 }

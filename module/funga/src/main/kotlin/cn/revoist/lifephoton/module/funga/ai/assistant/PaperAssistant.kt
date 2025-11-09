@@ -1,6 +1,8 @@
 package cn.revoist.lifephoton.module.funga.ai.assistant
 
 import cn.revoist.lifephoton.module.funga.ai.ModelStore
+import cn.revoist.lifephoton.module.funga.ai.embedding.SentencesEmbedding
+import cn.revoist.lifephoton.module.funga.ai.rag.MultiEmbeddingStoreContentRetriever
 import dev.langchain4j.service.AiServices
 import dev.langchain4j.service.SystemMessage
 import dev.langchain4j.service.UserMessage
@@ -38,6 +40,7 @@ interface PaperAssistant {
     companion object{
         val INSTANCE = AiServices.builder(PaperAssistant::class.java)
             .chatLanguageModel(ModelStore.deepSeekV3)
+            .contentRetriever(MultiEmbeddingStoreContentRetriever(SentencesEmbedding.model.value))
             .build()
     }
 }

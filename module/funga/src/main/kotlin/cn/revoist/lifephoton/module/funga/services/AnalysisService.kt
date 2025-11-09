@@ -8,6 +8,7 @@ import cn.revoist.lifephoton.module.authentication.sendEmail
 import cn.revoist.lifephoton.module.authentication.sendEmailNotice
 import cn.revoist.lifephoton.module.filemanagement.FileManagementAPI
 import cn.revoist.lifephoton.module.funga.FungaPlugin
+import cn.revoist.lifephoton.module.funga.ai.ModelStore
 import cn.revoist.lifephoton.module.funga.ai.assistant.AnalysisAssistant
 import cn.revoist.lifephoton.module.funga.ai.assistant.PaperAssistant
 import cn.revoist.lifephoton.module.funga.ai.assistant.SortAssistant
@@ -207,7 +208,7 @@ object AnalysisService {
                 //检验一下是否相关
                 try {
                     val isRelated = if (request.type == "union"){
-                        ppp =  AnalysisAssistant.INSTANCE.isPhenotypeRelatedAny(request.phenotypes,ps)
+                        ppp = AnalysisAssistant.INSTANCE.isPhenotypeRelatedAny(request.phenotypes,ps)
                         ppp.result.isNotEmpty()
                     }else{
                         ppp = AnalysisAssistant.INSTANCE.isPhenotypeRelatedAll(request.phenotypes,ps)
@@ -233,10 +234,13 @@ object AnalysisService {
         }
     }
     fun imputationPredictGene(request: ImputationPredictGenesRequest,currentDegree:Int = 1): List<MergeData<HashMap<String, Any>>> {
+        val fGene = request.genes.toList()
         return join(request.dbs()){db->
             val filterRes = PredictGeneResponse()
             for ((degree,genes) in findInteractions(db,request,currentDegree)){
-                filterRes[degree] = genes.filter { !request.genes.contains(it) }
+                filterRes[degree] = genes.filter {
+                    !fGene.asFungaId(db).contains(it)
+                }
             }
             GeneService.getInteractionsByPGR(filterRes,db)
         }
@@ -386,12 +390,12 @@ object AnalysisService {
                     nsc.database = it.database
                     nsc.data = arrayListOf()
                     val pg = PredictGene()
-                    val m = it.data!!.genes.filter { it.value < request.degree }
+                    val m = it.data!!.genes.filter { it.value <= request.degree }
 
                     val mm = HashMap<String,Int>()
                     mm.putAll(m)
                     mm.keys.forEach {
-                        mm[it] = mm[it]!! + 1
+                        mm[it] = mm[it]!!
                     }
                     pg.genes = mm
                     pg.interactions = it.data!!.interactions.filter { it.gene1 in mm.keys || it.gene2 in mm.keys }

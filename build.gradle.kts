@@ -48,7 +48,7 @@ subprojects {
         implementation("io.ktor:ktor-server-netty-jvm")
         implementation("ch.qos.logback:logback-classic:$logback_version")
         implementation("io.ktor:ktor-server-config-yaml-jvm")
-        implementation ("org.ktorm:ktorm-core:4.1.1")
+        implementation("org.ktorm:ktorm-core:4.1.1")
         implementation("org.ktorm:ktorm-support-postgresql:4.1.1")
         implementation("org.reflections:reflections:0.10.2")
         implementation("org.postgresql:postgresql:42.7.3")

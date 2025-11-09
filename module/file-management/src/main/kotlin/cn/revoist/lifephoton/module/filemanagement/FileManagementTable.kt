@@ -3,7 +3,6 @@ package cn.revoist.lifephoton.module.filemanagement
 import org.ktorm.entity.Entity
 import org.ktorm.schema.Table
 import org.ktorm.schema.boolean
-import org.ktorm.schema.double
 import org.ktorm.schema.int
 import org.ktorm.schema.long
 import org.ktorm.schema.varchar
@@ -20,7 +19,6 @@ object FileManagementTable:Table<FileManagementTable.FileUnit>("file_management"
     val path = varchar("path").bindTo { it.path }
     val timestamp = long("timestamp").bindTo { it.timestamp }
     val name = varchar("name").bindTo { it.name }
-    val visitor = varchar("visitor").bindTo { it.visitor }
     val upload = boolean("upload").bindTo { it.upload }
     val source = varchar("source").bindTo { it.source }
     interface FileUnit:Entity<FileUnit>{
@@ -31,7 +29,6 @@ object FileManagementTable:Table<FileManagementTable.FileUnit>("file_management"
         var path:String
         var timestamp:Long
         var name:String
-        var visitor:String
         var source:String
         var upload: Boolean
     }

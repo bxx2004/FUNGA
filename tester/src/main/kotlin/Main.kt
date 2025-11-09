@@ -1,6 +1,6 @@
 import cn.revoist.lifephoton.ktors.startEngine
-import cn.revoist.lifephoton.module.funga.FungaPlugin
 import cn.revoist.lifephoton.tools.FrontAPIPrinter
+
 
 /**
  * @author 6hisea
@@ -8,6 +8,6 @@ import cn.revoist.lifephoton.tools.FrontAPIPrinter
  * @description: None
  */
 fun main() {
-    FrontAPIPrinter.generate("C:\\Users\\12232\\Desktop\\test")
-    //startEngine(arrayOf())
+    //FrontAPIPrinter.generate("C:\\Users\\12232\\Desktop\\test")
+    startEngine(arrayOf())
 }

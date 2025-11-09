@@ -9,9 +9,9 @@ import cn.revoist.lifephoton.plugin.anno.AutoUse
  * @description: None
  */
 @AutoUse
-object System : Plugin() {
+object Lifephoton : Plugin() {
     override val name: String
-        get() = "System"
+        get() = "Lifephoton"
     override val author: String
         get() = "Haixu Liu"
     override val version: String

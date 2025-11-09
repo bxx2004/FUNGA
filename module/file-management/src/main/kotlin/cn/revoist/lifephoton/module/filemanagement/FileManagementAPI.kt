@@ -34,7 +34,7 @@ object FileManagementAPI : PluginAPI{
         return StaticFileManager(plugin.id+"/$child")
     }
 
-    fun write(name:String, user: UserDataEntity?, upload: Boolean, source: Plugin, func:(File)->Unit){
+    fun write(name:String, user: UserDataEntity?, upload: Boolean, source: Plugin, func:(File)->Unit):String{
         val code = System.currentTimeMillis().toString() + "-" + Tools.generateCode()
         val f = File(FileManagement.workdir, "$code.lpa")
         if (f.exists()){
@@ -49,10 +49,10 @@ object FileManagementAPI : PluginAPI{
                 set(FileManagementTable.path,f.absolutePath)
                 set(FileManagementTable.user_id,user?.id?:-1)
                 set(FileManagementTable.timestamp,System.currentTimeMillis())
-                set(FileManagementTable.visitor,"")
                 set(FileManagementTable.file_id,code)
                 set(FileManagementTable.upload,upload)
         }
+        return code
     }
 
     fun findRecordById(id:String): FileManagementTable.FileUnit?{
@@ -72,9 +72,10 @@ object FileManagementAPI : PluginAPI{
             .where {
                 FileManagementTable.file_id eq id
             }.map {
-                it.get(FileManagementTable.file_id).toString()
+                it[FileManagementTable.path].toString()
             }.firstOrNull()
         if (filePath != null){
+            //path null
             return File(filePath)
         }
         return null

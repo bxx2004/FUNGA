@@ -1,12 +1,14 @@
 package cn.revoist.lifephoton.module.authentication.pages
 
 import cn.revoist.lifephoton.module.authentication.asEntity
+import cn.revoist.lifephoton.module.authentication.data.Tools
 import cn.revoist.lifephoton.module.authentication.getUser
 import cn.revoist.lifephoton.module.authentication.isLogin
 import cn.revoist.lifephoton.plugin.match
 import cn.revoist.lifephoton.plugin.route.GET
 import cn.revoist.lifephoton.plugin.route.Route
 import cn.revoist.lifephoton.plugin.route.RouteContainer
+import cn.revoist.lifephoton.plugin.route.checkParameters
 import cn.revoist.lifephoton.plugin.route.ok
 import io.ktor.server.routing.*
 
@@ -27,5 +29,11 @@ object Views {
         }.default {
             call.ok(true)
         }
+    }
+    @Route(GET)
+    suspend fun getUsername(call:RoutingCall){
+        call.checkParameters("id")
+        val id = call.queryParameters["id"]!!
+        call.ok(Tools.getUserById(id.toLong())?.username?:"Unknown")
     }
 }

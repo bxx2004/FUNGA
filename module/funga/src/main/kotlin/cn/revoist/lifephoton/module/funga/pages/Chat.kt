@@ -14,6 +14,7 @@ import cn.revoist.lifephoton.plugin.route.ok
 import cn.revoist.lifephoton.tools.submit
 import dev.langchain4j.data.message.ChatMessageType
 import io.ktor.http.ContentType
+import io.ktor.server.response.respondOutputStream
 import io.ktor.server.response.respondTextWriter
 import io.ktor.server.routing.RoutingCall
 import kotlinx.coroutines.CompletableDeferred
@@ -70,17 +71,17 @@ object Chat {
         }.toInt()
         val stream = TalkBot.INSTANCE.chat(userId,req.message)
         var b = false
-        call.respondTextWriter(ContentType.Text.Plain) {
+        call.respondOutputStream {
             val completion = CompletableDeferred<Any>()
             submit(-1,10){
-                write("<heart></heart>")
+                write("<heart></heart>".encodeToByteArray())
                 flush()
                 if (b) it.cancel()
             }
             stream.onPartialResponse { res ->
                 b =true
                 try {
-                    write(res)
+                    write(res.encodeToByteArray())
                     flush()
                 } catch (e: IOException) {
                     completion.completeExceptionally(e)

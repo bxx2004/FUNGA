@@ -9,4 +9,6 @@
     </root>
     <logger name="org.eclipse.jetty" level="INFO"/>
     <logger name="io.netty" level="INFO"/>
+    <logger name="io.ktor" level="ERROR"/>
+    <logger name="org.ktorm" level="ERROR"/>
 </configuration>

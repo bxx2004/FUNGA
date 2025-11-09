@@ -59,13 +59,6 @@ class DataManager(val plugin:Plugin) {
     fun useDefaultDatabase():Database{
         return Booster.database.value!!
     }
-    fun useTable(table:Table<*>,dbName:String = plugin.id){
-        val db = databases.find { it.name == dbName }
-        if (db == null) {
-            throw RuntimeException("Not found database $dbName")
-        }
-        //表不存在的话自动创建
-    }
     fun useBuffers():BufferPool{
         return bufferPool
     }
@@ -93,10 +86,10 @@ class DataManager(val plugin:Plugin) {
         return pageCache[uri]
     }
 
-    fun useDynamicPagination(size: Int = 20,lock:Boolean = false,func:(pagination: Int,size: Int) -> DynamicPageInformation):PagingPayloadResponse<*>{
+    fun useDynamicPagination(size: Int = 20, func:(pagination: Int, size: Int) -> DynamicPageInformation):PagingPayloadResponse<*>{
 
-        val code = "dynamic_" + generateCode()
-        val page = DynamicPage(size,"${plugin.id}-${code}",lock,func)
+        val code = "dynamic_${generateCode()}"
+        val page = DynamicPage(size,"${plugin.id}-${code}",func)
         pageBuffer[code] = arrayListOf(page)
         return pageBuffer[code]!![0].toResponse(1)
     }

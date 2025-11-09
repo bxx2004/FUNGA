@@ -71,42 +71,6 @@ object Operate : RoutePage("operate") {
                     }
                 call.ok("delete success.")
             }
-            "add_user" -> {
-                val user_id = call.queryParameters["user_id"]
-                if (user_id == null) {
-                    call.error("user_id must not be null!")
-                    return
-                }
-                val u = file.visitor.split(",").toTypedArray().toMutableList()
-                u.add(user_id)
-                FileManagement.dataManager.useDatabase()
-                    .update(FileManagementTable) {
-                        set(FileManagementTable.visitor,u.joinToString(","))
-                        where {
-                            it.user_id eq user.id
-                        }
-                    }
-                call.ok("add user success!")
-            }
-            "remove_user" -> {
-                val user_id = call.queryParameters["user_id"]
-                if (user_id == null) {
-                    call.error("user_id must not be null!")
-                    return
-                }
-                val u = file.visitor.split(",").toTypedArray().toMutableList()
-                u.removeIf {
-                    it == user_id
-                }
-                FileManagement.dataManager.useDatabase()
-                    .update(FileManagementTable) {
-                        set(FileManagementTable.visitor,u.joinToString(","))
-                        where {
-                            it.user_id eq user.id
-                        }
-                    }
-                call.ok("remove user success!")
-            }
         }
     }
 }

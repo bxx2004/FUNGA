@@ -61,7 +61,6 @@ fun Any.properties():List<Field>{
 fun Any.property(name:String): Field?{
     return this.properties().find { it.name == name }
 }
-
 suspend inline fun <T>RoutingCall.requestBody(clazz:Class<T>):T{
     return try {
         gson.fromJson(receiveText(),clazz)
@@ -74,6 +73,15 @@ suspend inline fun RoutingCall.pageSize():Int{
     return (queryParameters["pageSize"]?:"20").toInt()
 }
 //普通分页必须取消缓存
+
+suspend fun RoutingCall.dynamicPaging(manager: DataManager,dataGenerator:(requestPage:Int,size:Int)-> DynamicPageInformation){
+    ok(
+        manager.useDynamicPagination(pageSize()){pagination, size ->
+            dataGenerator(pagination,size)
+        }
+    )
+}
+
 suspend fun RoutingCall.paging(manager:DataManager,data:List<Any>,lock:Boolean = false,cache:Boolean = true){
     val res = if (cache){
         val id = manager.usePaginationCache(request.uri)

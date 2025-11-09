@@ -9,11 +9,7 @@ import org.reflections.Reflections
 import java.io.File
 import kotlin.reflect.jvm.kotlinFunction
 
-/**
- * @author 6hisea
- * @date  2025/1/24 18:25
- * @description: None
- */
+
 object FrontAPIPrinter {
     class FrontAPI(val path:String,val mName:String = path,val methods:List<String>,val api:Api?){
         override fun toString(): String {
@@ -37,19 +33,19 @@ object FrontAPIPrinter {
                     pa += it.value.replace("{","").replace("}","") +":string,"
                     exp += "    @url $pa PathParam\n"
                 }
-                pa += "params)"
+                pa += "params:any)"
                 exp += "  */"
                 methods.forEach {
                     r+= "  $exp\n"
                     r+= "  async ${header}${wordToCase(mName)}$pa{\n"
-                    r+= "    return await requests.${it}WithResponse(`${path}`,params)\n"
+                    r+= "    return await requests.${it}WithResponse(`${path.replace("{","\${")}`,params)\n"
                     r+= "  },\n"
                 }
             }else{
                 exp += "  */"
                 methods.forEach {
                     r+= "  $exp\n"
-                    r+= "  async ${header}${wordToCase(mName)}(params){\n"
+                    r+= "  async ${header}${wordToCase(mName)}(params:any){\n"
                     r+= "    return await requests.${it}WithResponse(\"${path}\",params)\n"
                     r+= "  },\n"
                 }
@@ -70,7 +66,7 @@ object FrontAPIPrinter {
                 if (obj is RoutePage){
                     val api = FrontAPI(
                         "/" + it.pluginId + "/" + obj.path,
-                        clazz.simpleName,
+                        clazz.simpleName.lowercase(),
                         obj.methods().map { it.value.lowercase() },
                         routeApi
                     )
@@ -84,29 +80,33 @@ object FrontAPIPrinter {
         //查找容器
         for (clazz in ref.getTypesAnnotatedWith(RouteContainer::class.java)) {
             clazz.getAnnotation(RouteContainer::class.java)?.let { gateway->
-                clazz.declaredMethods.filter {
-                    it.kotlinFunction?.annotations?.filterIsInstance<Route>()?.first() != null
-                }.forEach {
-                    val route = it.kotlinFunction!!.annotations.filterIsInstance<Route>().first()
-                    val routeApi = it.kotlinFunction!!.annotations.filterIsInstance<Api>().firstOrNull()
+                fun load(cla:Class<*>){
+                    cla.declaredMethods.filter {
+                        it.kotlinFunction?.annotations?.filterIsInstance<Route>()?.firstOrNull() != null
+                    }.forEach {
+                        val route = it.kotlinFunction!!.annotations.filterIsInstance<Route>().first()
+                        val routeApi = it.kotlinFunction!!.annotations.filterIsInstance<Api>().firstOrNull()
 
-                    val path = if (route.path == "&empty"){
-                        formatConversion(it.name)
-                    }else{
-                        route.path
+                        val path = if (route.path == "&empty"){
+                            formatConversion(it.name)
+                        }else{
+                            route.path
+                        }
+
+                        val api = FrontAPI(
+                            "/" + gateway.pluginId + "/" + gateway.root + "/" + path,
+                            formatConversion(gateway.root + "-" + path),
+                            arrayListOf(route.method.lowercase()),routeApi
+                        )
+                        if (result[gateway.pluginId] == null){
+                            result[gateway.pluginId] = arrayListOf()
+                        }
+                        result[gateway.pluginId]?.add(api)
+
                     }
-
-                    val api = FrontAPI(
-                        "/" + gateway.pluginId + "/" + gateway.root + "/" + path,
-                        path,
-                        arrayListOf(route.method.lowercase()),routeApi
-                    )
-                    if (result[gateway.pluginId] == null){
-                        result[gateway.pluginId] = arrayListOf()
-                    }
-                    result[gateway.pluginId]?.add(api)
-
                 }
+                load(clazz)
+                load(clazz.superclass)
             }
         }
 

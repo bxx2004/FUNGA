@@ -3,6 +3,9 @@ package cn.revoist.lifephoton.module.funga.ai.chat
 import cn.revoist.lifephoton.module.funga.ai.ModelStore
 import cn.revoist.lifephoton.module.funga.ai.chat.tools.AIFungaTools
 import cn.revoist.lifephoton.module.funga.ai.chat.tools.AINetworkTools
+import cn.revoist.lifephoton.module.funga.ai.embedding.SentencesEmbedding
+import cn.revoist.lifephoton.module.funga.ai.rag.EmbeddingStores
+import cn.revoist.lifephoton.module.funga.ai.rag.MultiEmbeddingStoreContentRetriever
 import dev.langchain4j.memory.chat.MessageWindowChatMemory
 import dev.langchain4j.service.AiServices
 import dev.langchain4j.service.ChatMemoryAccess
@@ -25,6 +28,7 @@ interface TalkBot : ChatMemoryAccess {
             .streamingChatLanguageModel(ModelStore.deepSeekV3Chat)
             .chatMemoryProvider { id -> MessageWindowChatMemory.withMaxMessages(10) }
             .tools(AIFungaTools, AINetworkTools)
+            .contentRetriever(MultiEmbeddingStoreContentRetriever(SentencesEmbedding.model.value))
             .build()
     }
 }

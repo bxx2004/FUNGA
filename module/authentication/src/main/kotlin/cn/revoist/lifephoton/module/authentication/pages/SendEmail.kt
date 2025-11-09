@@ -1,6 +1,5 @@
 package cn.revoist.lifephoton.module.authentication.pages
 
-import cn.revoist.lifephoton.Booster
 import cn.revoist.lifephoton.plugin.anno.AutoRegister
 import cn.revoist.lifephoton.plugin.route.RoutePage
 import cn.revoist.lifephoton.plugin.route.error
@@ -44,7 +43,7 @@ object SendEmail : RoutePage("send-email",false,false) {
             to(email)
 
             withSubject("Revo(锐沃) 注册行为验证")
-            withPlainText("【锐沃科技】您好，您在锐沃科技(LifePhoton Database)的账号正在进行注册操作，切勿将验证码泄露于他人，5分钟内有效。验证码：${code} 。")
+            withPlainText("【锐沃科技】您好，您的账号正在进行注册操作，切勿将验证码泄露于他人，5分钟内有效。验证码：${code} 。")
         }.send()
         call.message("successfuly")
     }
