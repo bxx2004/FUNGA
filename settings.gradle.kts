@@ -8,4 +8,5 @@ include("tester")
 include("module:funga")
 findProject(":module:funga")?.name = "funga"
 
-include("module:announcement")
+include("module:homepage")
+include("module:ai-assistant")

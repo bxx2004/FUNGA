@@ -1,5 +1,6 @@
 package cn.revoist.lifephoton.module.filemanagement
 
+import cn.revoist.lifephoton.plugin.anno.CreateTable
 import org.ktorm.entity.Entity
 import org.ktorm.schema.Table
 import org.ktorm.schema.boolean
@@ -12,6 +13,18 @@ import org.ktorm.schema.varchar
  * @date  2025/7/28 00:29
  * @description: None
  */
+@CreateTable("lifephoton", dbName = "lifephoton", value = """
+    CREATE TABLE IF NOT EXISTS file_management(
+    id SERIAL PRIMARY KEY,
+    file_id VARCHAR NOT NULL,
+    user_id BIGINT NOT NULL,
+    path VARCHAR NOT NULL,
+    timestamp BIGINT NOT NULL,
+    name VARCHAR NOT NULL,
+    upload BOOLEAN NOT NULL,
+    source VARCHAR NOT NULL
+);
+""")
 object FileManagementTable:Table<FileManagementTable.FileUnit>("file_management") {
     val id = int("id").primaryKey().bindTo { it.id }
     val file_id = varchar("file_id").bindTo { it.file_id }

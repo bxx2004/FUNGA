@@ -27,12 +27,15 @@ import kotlin.reflect.jvm.kotlinFunction
  * @description: None
  */
 object Booster {
-
+    fun main(args: Array<String>){
+        startEngine(args)
+    }
     var VERSION = "beta-1"
     var DB_URL = "127.0.0.1"
     var DB_NAME = "lifephoton"
     var DB_USERNAME = "root"
     var DB_PASSWORD = "123456"
+
 
     val database = lazy { try {
         Database.connect("jdbc:postgresql://${DB_URL}/${DB_NAME}","org.postgresql.Driver",

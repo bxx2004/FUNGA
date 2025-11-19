@@ -11,4 +11,9 @@
     <logger name="io.netty" level="INFO"/>
     <logger name="io.ktor" level="ERROR"/>
     <logger name="org.ktorm" level="ERROR"/>
+    <logger name="io.grpc.netty" level="ERROR"/>
+    <logger name="io.netty" level="ERROR"/>
+    <logger name="io.milvus.v2.utils.RpcUtils" level="ERROR"/>
+    <logger name="org.simplejavamail" level="ERROR"/>
+    <logger name="org.reflections.Reflections" level="ERROR"/>
 </configuration>

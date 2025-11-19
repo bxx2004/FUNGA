@@ -17,7 +17,7 @@ import io.ktor.server.sessions.*
  * @description: None
  */
 @AutoRegister("auth")
-object Profile :RoutePage("profile/{user}",true,true){
+object Profile :RoutePage("profile/{user}",auth = true){
     override fun methods(): List<HttpMethod> {
         return listOf(HttpMethod.Get)
     }

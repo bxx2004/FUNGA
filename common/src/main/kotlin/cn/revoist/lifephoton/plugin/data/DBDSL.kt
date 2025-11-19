@@ -1,13 +1,12 @@
 package cn.revoist.lifephoton.plugin.data
 
 import cn.revoist.lifephoton.plugin.data.entity.Map
+import cn.revoist.lifephoton.plugin.data.sqltype.gson
 import cn.revoist.lifephoton.plugin.properties
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonObjectBuilder
-import kotlinx.serialization.json.JsonPrimitive
 import org.ktorm.database.Database
 import org.ktorm.dsl.*
 import org.ktorm.schema.Column
+import org.ktorm.schema.ColumnDeclaring
 import org.ktorm.schema.Table
 import java.sql.ResultSetMetaData
 import kotlin.reflect.full.declaredFunctions
@@ -27,7 +26,7 @@ fun Database.maps(table: Table<*>, vararg columns: Column<*>, func: Query.()-> Q
         }
     }
     val re = ArrayList<HashMap<String,Any?>>()
-    var a=  from(table).select(selected)
+    var a= from(table).select(selected)
     a = func(a)?:a
     a.forEach { row->
         val r = HashMap<String,Any?>()
@@ -82,6 +81,17 @@ private fun findLabel(meta:ResultSetMetaData):List<String>{
     return (1..meta.columnCount).map { meta.getColumnLabel(it) }
 }
 
+fun Query.toMap(table: Table<*>):List<kotlin.collections.Map<String,Any?>>{
+    val re = arrayListOf<kotlin.collections.Map<String,Any?>>()
+    map {
+        val res = hashMapOf<String,Any?>()
+        table.columns.forEach { col ->
+            res[col.name] = it[col]
+        }
+        re.add(res)
+    }
+    return re
+}
 
 
 fun <T :Table<out Any>,R>Database.bind(table:T,entityZ:Class<R>,func: QuerySource.()->Query):List<R>{
@@ -91,26 +101,24 @@ fun <T :Table<out Any>,R>Database.bind(table:T,entityZ:Class<R>,func: QuerySourc
 
     query.forEach { row ->
         val entity = entityZ.getConstructor().newInstance()!!
-        val labels = findLabel(row.metaData)
-        entity.properties().filter {
-            it.kotlinProperty?.findAnnotations(Map::class)?.isNotEmpty() == true
-        }.forEach { property ->
-            val mapAnnotation = property.kotlinProperty!!.findAnnotations(Map::class)[0]
+        entity.properties().forEach { property ->
+            val mapAnnotation = property.kotlinProperty!!.findAnnotations(Map::class).firstOrNull()?:Map()
             val mapName = if (mapAnnotation.colName == "&empty") property.name else mapAnnotation.colName
             val convert = if (mapAnnotation.convert != "&empty") {
-                entity::class.declaredFunctions.firstOrNull { it.name == mapAnnotation.convert }
+                entity::class.java.getDeclaredMethod(mapAnnotation.convert)
             }else{
                 null
             }
-
-            listOf(mapName, "${table.tableName}_$mapName").forEach { name ->
-                if (labels.contains(name)) {
-                    if (convert == null){
-                        property.set(entity, row.getObject(name))
-                    } else {
-                        property.set(entity, convert.call(row.getObject(name)))
-                    }
+            val value = row[table[mapName]]
+            if (convert == null) {
+                try {
+                    property.set(entity, value)
+                }catch (e:IllegalArgumentException){
+                    property.set(entity, gson.fromJson(gson.toJson(value),property.type))
                 }
+
+            }else{
+                convert.invoke(entity, value)
             }
         }
         result.add(entity)
@@ -119,3 +127,14 @@ fun <T :Table<out Any>,R>Database.bind(table:T,entityZ:Class<R>,func: QuerySourc
     return result
 }
 
+
+fun Database.count(table: Table<*>,func: () -> ColumnDeclaring<Boolean>): Long {
+    return this.from(table)
+        .select(count())
+        .where {
+            func()
+        }
+        .map { row ->
+            row.getLong(1)  // 使用索引获取计数结果
+        }.firstOrNull() ?: 0
+}

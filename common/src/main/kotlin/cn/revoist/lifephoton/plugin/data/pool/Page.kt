@@ -68,5 +68,8 @@ fun splitPage(data: List<Any?>, count:Int,session: String,lock:Boolean):List<Pag
             result.add(NormalPage(i+1,allPage, data.subList(i*count,i*count+count),session,lock))
         }
     }
+    if (result.isEmpty()){
+        result.add(NormalPage(1,1,arrayListOf(),session,lock))
+    }
     return result
 }

@@ -4,6 +4,7 @@ import cn.revoist.lifephoton.module.authentication.asEntity
 import cn.revoist.lifephoton.module.authentication.data.Tools
 import cn.revoist.lifephoton.module.authentication.getUser
 import cn.revoist.lifephoton.module.authentication.isLogin
+import cn.revoist.lifephoton.module.authentication.username
 import cn.revoist.lifephoton.plugin.match
 import cn.revoist.lifephoton.plugin.route.GET
 import cn.revoist.lifephoton.plugin.route.Route
@@ -34,6 +35,6 @@ object Views {
     suspend fun getUsername(call:RoutingCall){
         call.checkParameters("id")
         val id = call.queryParameters["id"]!!
-        call.ok(Tools.getUserById(id.toLong())?.username?:"Unknown")
+        call.ok(id.toLong().username())
     }
 }

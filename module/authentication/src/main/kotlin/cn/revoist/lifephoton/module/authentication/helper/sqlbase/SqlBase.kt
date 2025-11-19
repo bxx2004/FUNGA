@@ -3,9 +3,9 @@ package cn.revoist.lifephoton.module.authentication.helper.sqlbase
 import cn.revoist.lifephoton.module.authentication.asEntity
 import cn.revoist.lifephoton.module.authentication.getUser
 import cn.revoist.lifephoton.module.authentication.isLogin
+import cn.revoist.lifephoton.module.authentication.validateLogin
 import cn.revoist.lifephoton.plugin.Plugin
 import cn.revoist.lifephoton.plugin.data.pool.DynamicPageInformation
-import cn.revoist.lifephoton.plugin.data.sqltype.gson
 import cn.revoist.lifephoton.plugin.dynamicPaging
 import cn.revoist.lifephoton.plugin.match
 import cn.revoist.lifephoton.plugin.requestBody
@@ -15,7 +15,6 @@ import cn.revoist.lifephoton.plugin.route.POST
 import cn.revoist.lifephoton.plugin.route.Route
 import cn.revoist.lifephoton.plugin.route.ok
 import cn.revoist.lifephoton.plugin.route.sandbox
-import cn.revoist.lifephoton.system.Lifephoton
 import cn.revoist.lifephoton.tools.inferType
 import io.ktor.server.request.uri
 import io.ktor.server.routing.RoutingCall
@@ -71,12 +70,29 @@ abstract class SqlBase(val plugin: Plugin, val table: Table<*>, val entityClass:
     @Api("查询数据模型")
     suspend fun query(call: RoutingCall) {
         val fields = entityClass.declaredFields
-        val res = hashMapOf<String, String>()
+        val res = arrayListOf<BaseModel>()
         fields.forEach {
-            if (it.kotlinProperty?.annotations?.filterIsInstance<BaseType>()?.isNotEmpty() == true) {
-                res[it.name] =  it.kotlinProperty!!.annotations.filterIsInstance<BaseType>()[0].value
+            val anno = it.kotlinProperty!!.annotations.filterIsInstance<BaseType>().firstOrNull()
+            if (anno != null) {
+                val attrs = hashMapOf<String, Any>()
+                if (anno.min != anno.max && anno.min != -1L && anno.max != -1L && anno.value == "number") {
+                    attrs["min"] = anno.min
+                    attrs["max"] = anno.max
+                }else{
+                    attrs["min"] = Long.MIN_VALUE
+                    attrs["max"] = Long.MAX_VALUE
+                }
+                if (anno.value == "radio" || anno.value == "checkbox"){
+                    attrs["options"] = anno.options
+                    attrs["optionType"] = anno.optionType
+                }
+                res.add(BaseModel(it.name,anno.value,attrs))
             }else{
-                res[it.name] = it.type.simpleName.lowercase()
+                res.add(BaseModel(
+                    it.name,
+                    it.type.simpleName.lowercase().parseBaseType(),
+                    hashMapOf()
+                ))
             }
         }
         call.ok(res)
@@ -84,57 +100,72 @@ abstract class SqlBase(val plugin: Plugin, val table: Table<*>, val entityClass:
     @Route(POST)
     @Api("插入实体数据")
     suspend fun insert(call: RoutingCall){
-        call.sandbox {
-            val request = call.requestBody(entityClass)
-            Lifephoton.dataManager.useDatabase()
-                .insert(table,request)
+        call.validateLogin(call.request.uri.replace("/",".").replace("/permission","").replaceFirst(".","") + ".insert") { user ->
+            sandbox {
+                val request = call.requestBody(entityClass)
+                plugin.dataManager.useDatabase()
+                    .insert(table,request)
+            }
         }
     }
     @Route(POST)
     @Api("删除实体数据")
     suspend fun delete(call: RoutingCall){
-        call.sandbox {
-            val request = call.requestBody(entityClass)
-            Lifephoton.dataManager.useDatabase()
-                .delete(table,request)
+        call.validateLogin(call.request.uri.replace("/",".").replace("/permission","").replaceFirst(".","") + ".delete") { user ->
+            sandbox {
+                val request = call.requestBody(entityClass)
+                plugin.dataManager.useDatabase()
+                    .delete(table,request)
+            }
         }
     }
     @Route(POST)
     @Api("更新/修改实体数据")
     suspend fun update(call: RoutingCall){
-        call.sandbox {
-            val request = call.requestBody(entityClass)
-            Lifephoton.dataManager.useDatabase()
-                .update(table,request)
+        call.validateLogin(call.request.uri.replace("/",".").replace("/permission","").replaceFirst(".","") + ".update") { user ->
+            sandbox {
+                val request = call.requestBody(entityClass)
+                plugin.dataManager.useDatabase()
+                    .update(table,request)
+            }
         }
     }
     @Route(POST)
     @Api("查询实体数据")
     suspend fun select(call: RoutingCall){
         val request = call.requestBody(entityClass)
-        call.dynamicPaging(plugin.dataManager){requestPage, size ->
-            val allCount = plugin.dataManager.useDatabase().count(table,request)
-            val pages = ceil(allCount / size.toDouble()).toInt()
-            return@dynamicPaging if (requestPage <= pages && requestPage >= 1) {
-                val offset = (requestPage - 1) * size
-                val pre = if (requestPage != 1){
-                    requestPage-1
-                }else{
-                    -1
-                }
-                val next = if (requestPage < pages){
-                    requestPage + 1
-                }else{
-                    -1
-                }
-                val data = plugin.dataManager.useDatabase()
-                    .select(table,request){
-                        limit(offset,size)
-                        orderBy(table["id"].desc())
+        suspend fun respond(){
+            call.dynamicPaging(plugin.dataManager){requestPage, size ->
+                val allCount = plugin.dataManager.useDatabase().count(table,request)
+                val pages = ceil(allCount / size.toDouble()).toInt()
+                return@dynamicPaging if (requestPage <= pages && requestPage >= 1) {
+                    val offset = (requestPage - 1) * size
+                    val pre = if (requestPage != 1){
+                        requestPage-1
+                    }else{
+                        -1
                     }
-                DynamicPageInformation(data,pages,pre,next)
-            } else {
-                DynamicPageInformation(emptyList(),pages,-1,-1)
+                    val next = if (requestPage < pages){
+                        requestPage + 1
+                    }else{
+                        -1
+                    }
+                    val data = plugin.dataManager.useDatabase()
+                        .select(table,request){
+                            limit(offset,size)
+                            orderBy(table["id"].desc())
+                        }
+                    DynamicPageInformation(data,pages,pre,next)
+                } else {
+                    DynamicPageInformation(emptyList(),pages,-1,-1)
+                }
+            }
+        }
+        if (selectable) {
+            respond()
+        }else{
+            call.validateLogin(call.request.uri.replace("/",".").replace("/permission","").replaceFirst(".","") + ".select") { user ->
+                respond()
             }
         }
     }

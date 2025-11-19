@@ -23,6 +23,7 @@ object Check : RoutePage("check",false,false){
     override suspend fun onGet(call: RoutingCall) {
         val session = (call.sessions.get("user")?: UserSession("-1","-1")) as UserSession
         if (cn.revoist.lifephoton.module.authentication.data.Tools.checkToken(session)){
+            call.sessions.set(session)
             call.message("Login")
         }else{
             call.error("Not login")

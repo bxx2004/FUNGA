@@ -52,7 +52,7 @@ object Operate : RoutePage("operate") {
             call.error("please login!")
             return
         }
-        val file = FileManagement.dataManager.useDatabase().sequenceOf(FileManagementTable).find {
+        val file = FileManagement.dataManager.useDefaultDatabase().sequenceOf(FileManagementTable).find {
             it.file_id eq id
         }
         if (file == null){
@@ -60,12 +60,12 @@ object Operate : RoutePage("operate") {
             return
         }
         if (file.user_id != user.id){
-            call.error("You don't have permission to delete this file.")
+            call.error("You don't have permission.")
             return
         }
         when (type) {
             "delete" -> {
-                FileManagement.dataManager.useDatabase()
+                FileManagement.dataManager.useDefaultDatabase()
                     .delete(FileManagementTable){
                         (it.file_id eq id) and (it.user_id eq user.id)
                     }

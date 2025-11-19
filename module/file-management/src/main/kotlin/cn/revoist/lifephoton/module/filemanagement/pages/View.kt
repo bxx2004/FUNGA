@@ -36,13 +36,8 @@ object View : RoutePage("view"){
 
     override suspend fun onGet(call: RoutingCall) {
         val id = call.queryParameters["id"]
-        val type = call.queryParameters["type"]
         if (id == null) {
             call.error("id must not be null!")
-            return
-        }
-        if (type == null) {
-            call.error("type must not be null!")
             return
         }
         val user = if (call.isLogin()){
@@ -51,19 +46,24 @@ object View : RoutePage("view"){
             null
         }
 
-        val file = FileManagement.dataManager.useDatabase().sequenceOf(FileManagementTable).find {
+        val file = FileManagement.dataManager.useDefaultDatabase().sequenceOf(FileManagementTable).find {
             it.file_id eq id
         }
         if (file == null){
             call.error("file not found.")
             return
         }
-        if (file.user_id != -1L){
+        if (file.source != "public" || file.user_id != -1L){
             if (user == null){
                 call.error("please login!")
                 return
             }
             if (user.group == "admin" || user.id == file.user_id || file.user_id.hasFriend(user.id)){
+                call.response.header(
+                    HttpHeaders.ContentDisposition,
+                    ContentDisposition.Attachment.withParameter(ContentDisposition.Parameters.FileName, file.name)
+                        .toString()
+                )
                 call.respondFile(File(file.path))
             }else{
                 call.error("You don't have permission!")

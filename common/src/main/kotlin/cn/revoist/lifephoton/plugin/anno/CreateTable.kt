@@ -7,7 +7,6 @@ package cn.revoist.lifephoton.plugin.anno
  */
 annotation class CreateTable(
     val plugin:String,
-
     val value :String,
     val dbName:String = "lifephoton",
 )

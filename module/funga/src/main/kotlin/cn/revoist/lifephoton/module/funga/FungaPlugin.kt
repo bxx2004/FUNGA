@@ -1,7 +1,7 @@
 package cn.revoist.lifephoton.module.funga
 
-import cn.revoist.lifephoton.module.funga.data.core.MilvusDatabase
-import cn.revoist.lifephoton.module.funga.data.table.DBInfoTable
+import cn.revoist.lifephoton.module.funga.data.database.vector.MilvusDatabase
+import cn.revoist.lifephoton.module.funga.core.info.table.DBInfoTable
 import cn.revoist.lifephoton.module.funga.data.table.GeneTable
 import cn.revoist.lifephoton.module.funga.tools.fungaIdMapCache
 import cn.revoist.lifephoton.module.funga.tools.symbolMapCache
@@ -41,12 +41,6 @@ object FungaPlugin : Plugin(){
         val dir = File("/data/LifePhoton/funga")
         if (!dir.exists()) {
             dir.mkdirs()
-        }
-        val option = File("/data/LifePhoton/funga/db.txt")
-        if (option.exists()) {
-            option.readText().split('\n').forEach {
-                FungaOption.databases.add(it)
-            }
         }
         //try load mapping
         println("Pre loading mapping")

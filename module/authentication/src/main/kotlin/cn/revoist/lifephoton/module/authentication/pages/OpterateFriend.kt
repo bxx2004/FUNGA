@@ -7,6 +7,7 @@ import cn.revoist.lifephoton.module.authentication.data.table.hasFriend
 import cn.revoist.lifephoton.module.authentication.getUser
 import cn.revoist.lifephoton.module.authentication.isLogin
 import cn.revoist.lifephoton.plugin.match
+import cn.revoist.lifephoton.plugin.paging
 import cn.revoist.lifephoton.plugin.route.Api
 import cn.revoist.lifephoton.plugin.route.GET
 import cn.revoist.lifephoton.plugin.route.Route
@@ -88,14 +89,15 @@ object OpterateFriend {
             isLogin()
         }.then {
             val user = getUser().asEntity!!
-            ok(Auth.dataManager.useDatabase()
-                .from(FriendTable)
-                .select(FriendTable.to)
-                .where {
-                    FriendTable.from eq user.id
-                }.map {
-                    it.get(FriendTable.to)
-                })
+            paging(Auth.dataManager, cache = false,
+                data = Auth.dataManager.useDatabase()
+                    .from(FriendTable)
+                    .select(FriendTable.to)
+                    .where {
+                        FriendTable.from eq user.id
+                    }.map {
+                        it[FriendTable.to]!!
+                    })
         }.default {
             error("Not login")
         }

@@ -1,5 +1,6 @@
 package cn.revoist.lifephoton.ktors
 
+import cn.revoist.lifephoton.plugin.data.pool.NormalPage
 import cn.revoist.lifephoton.plugin.data.pool.Page
 import cn.revoist.lifephoton.plugin.event.events.AuthenticationEvent
 import cn.revoist.lifephoton.plugin.event.events.RootPageRequestEvent
@@ -59,7 +60,7 @@ fun Application.configureRouting() {
                 call.respond(ErrorResponse(message = "Not page found."))
                 return@get
             }
-            if (page.property("lock") as Boolean){
+            if (page is NormalPage && page.property("lock") as Boolean){
                 val userCookie = call.sessions.get("user") ?: UserSession("-1","-1")
                 val event = AuthenticationEvent(userCookie as UserSession,false).call() as AuthenticationEvent
                 if (event.truth){

@@ -22,7 +22,7 @@ class ObjectType<T : Any> : SqlType<T>(Types.VARCHAR, "ser_object") {
         if (rs.getString(index) == null){
             return null
         }
-        return gson.fromJson(rs.getString(index).toString(),Any::class.java) as T
+        return gson.fromJson<T>(rs.getString(index).toString(),Any::class.java)
     }
 
     override fun doSetParameter(ps: PreparedStatement, index: Int, parameter: T) {

@@ -1,7 +1,6 @@
 package cn.revoist.lifephoton.module.funga.data
 
-import cn.revoist.lifephoton.module.funga.data.entity.inneral.AnalysisResult
-import cn.revoist.lifephoton.plugin.data.sqltype.ObjectType
+import cn.revoist.lifephoton.module.funga.core.genephenotype.model.AnalysisResult
 import cn.revoist.lifephoton.plugin.data.sqltype.gson
 import org.ktorm.schema.BaseTable
 import org.ktorm.schema.Column

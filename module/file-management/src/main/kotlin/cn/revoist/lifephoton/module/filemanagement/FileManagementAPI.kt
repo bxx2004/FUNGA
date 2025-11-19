@@ -33,7 +33,26 @@ object FileManagementAPI : PluginAPI{
     fun createStaticFileManager(plugin: Plugin,child: String):StaticFileManager{
         return StaticFileManager(plugin.id+"/$child")
     }
-
+    fun writePublic(name:String, user: UserDataEntity?, upload: Boolean, func:(File)->Unit):String{
+        val code = System.currentTimeMillis().toString() + "-" + Tools.generateCode()
+        val f = File(FileManagement.workdir, "$code.lpa")
+        if (f.exists()){
+            f.delete()
+        }
+        f.createNewFile()
+        func(f)
+        FileManagement.dataManager.useDefaultDatabase()
+            .insert(FileManagementTable){
+                set(FileManagementTable.name,name)
+                set(FileManagementTable.source,"public")
+                set(FileManagementTable.path,f.absolutePath)
+                set(FileManagementTable.user_id,user?.id?:-1)
+                set(FileManagementTable.timestamp,System.currentTimeMillis())
+                set(FileManagementTable.file_id,code)
+                set(FileManagementTable.upload,upload)
+            }
+        return code
+    }
     fun write(name:String, user: UserDataEntity?, upload: Boolean, source: Plugin, func:(File)->Unit):String{
         val code = System.currentTimeMillis().toString() + "-" + Tools.generateCode()
         val f = File(FileManagement.workdir, "$code.lpa")
@@ -42,7 +61,7 @@ object FileManagementAPI : PluginAPI{
         }
         f.createNewFile()
         func(f)
-        FileManagement.dataManager.useDatabase()
+        FileManagement.dataManager.useDefaultDatabase()
             .insert(FileManagementTable){
                 set(FileManagementTable.name,name)
                 set(FileManagementTable.source,source.id)
@@ -56,18 +75,18 @@ object FileManagementAPI : PluginAPI{
     }
 
     fun findRecordById(id:String): FileManagementTable.FileUnit?{
-        return FileManagement.dataManager.useDatabase().sequenceOf(FileManagementTable).find {
+        return FileManagement.dataManager.useDefaultDatabase().sequenceOf(FileManagementTable).find {
             it.file_id eq id
         }
     }
     fun findRecordByUser(id: Long): List<FileManagementTable.FileUnit>{
-        return FileManagement.dataManager.useDatabase().sequenceOf(FileManagementTable).filter {
+        return FileManagement.dataManager.useDefaultDatabase().sequenceOf(FileManagementTable).filter {
             it.user_id eq id
         }.toList()
     }
 
     fun findFileById(id: String): File?{
-        val filePath = FileManagement.dataManager.useDatabase().from(FileManagementTable)
+        val filePath = FileManagement.dataManager.useDefaultDatabase().from(FileManagementTable)
             .select(FileManagementTable.path)
             .where {
                 FileManagementTable.file_id eq id
@@ -81,7 +100,7 @@ object FileManagementAPI : PluginAPI{
         return null
     }
     fun findFileByUser(id: Long): List<File>{
-        return FileManagement.dataManager.useDatabase().from(FileManagementTable)
+        return FileManagement.dataManager.useDefaultDatabase().from(FileManagementTable)
             .select(FileManagementTable.path)
             .where {
                 FileManagementTable.user_id eq id
@@ -91,7 +110,7 @@ object FileManagementAPI : PluginAPI{
     }
 
     class StaticFileManager(private val uniqueId:String){
-        fun putStaticFileWithTemp(p:String,func:(file:File)->Unit){
+        fun putStaticFileWithTemp(p:String,delete:Boolean = false,func:(file:File)->Unit){
             val file = File(FileManagement.staticDir,"$uniqueId/$p.tmp")
             if (!file.parentFile.exists()){
                 file.parentFile.mkdirs()
@@ -101,6 +120,9 @@ object FileManagementAPI : PluginAPI{
             }
             func(file)
             file.renameTo(File(file.absolutePath.replace(".tmp","")))
+            if (delete){
+                file.delete()
+            }
         }
         @Deprecated("Unsafe")
         fun putStaticFile(p:String,func:(file:File)->Unit){
