@@ -34,11 +34,11 @@ class KnowledgeBase private constructor(val tableName: String, minStore: Double 
         val embeddingsResponse = AIAssistantAPI.embeddingModel.embedAll(docs)
         store.addAll(embeddingsResponse.content(), docs)
     }
-    fun removeDocument(docId: String){
+    fun removeDocument(docId: String,user:Long){
         store.milvusClient().delete(
             DeleteParam.newBuilder()
                 .withCollectionName("publicKnowledgeBase")
-                .withExpr("meta[\"doc_id\"] == $docId")
+                .withExpr("meta[\"doc_id\"] == $docId AND meta[\"uploader\"] == $user")
                 .build()
         )
     }

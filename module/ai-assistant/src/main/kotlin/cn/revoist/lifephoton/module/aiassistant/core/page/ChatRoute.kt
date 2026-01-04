@@ -4,6 +4,7 @@ import cn.revoist.lifephoton.module.aiassistant.core.entity.ChatOption
 import cn.revoist.lifephoton.module.aiassistant.core.service.ChatServices
 import cn.revoist.lifephoton.module.aiassistant.core.service.ChatServices.wrapper
 import cn.revoist.lifephoton.module.aiassistant.impl.rag.FixContentInjector.DocumentTransformer
+import cn.revoist.lifephoton.module.aiassistant.impl.tools.StreamLocker
 import cn.revoist.lifephoton.module.authentication.validateLogin
 import cn.revoist.lifephoton.plugin.data.json.jsonObject
 import cn.revoist.lifephoton.plugin.data.sqltype.gson
@@ -78,10 +79,14 @@ object ChatRoute {
                 val token = ChatServices.chat(user.id,body)
 
                 val completion = CompletableDeferred<Any>()
+
+
                 call.respondOutputStream{
+                    val locker = StreamLocker(this)
                     try {
                         token.onRetrieved {
-                            write(
+                            locker.lock()
+                            locker.write(
                                 gson.toJson(it.map {
                                     val segment = it.textSegment()
                                     val content = segment.text()
@@ -93,33 +98,38 @@ object ChatRoute {
                                     DocumentTransformer(metadata,content)
                                 }).wrapper("@knowledgebase")
                             )
-                            flush()
+                            locker.unlock()
                         }.onPartialThinking {
-                            write(it.text().wrapper("@think"))
-                            flush()
+                            locker.lock()
+                            locker.write(it.text().wrapper("@think"))
+                            locker.unlock()
                         }.onPartialResponse {
-                            write(it.wrapper("@chat"))
-                            flush()
+                            locker.lock()
+                            locker.write(it.wrapper("@chat"))
+                            locker.unlock()
                         }.beforeToolExecution {
-                            write(gson.toJson(
+                            locker.lock()
+                            locker.write(gson.toJson(
                                 jsonObject {
                                     put("name",it.request().name())
                                     //需解析
                                     put("arguments", it.request().arguments())
                                 }
                             ).wrapper("@tool-start"))
-                            flush()
+                            locker.unlock()
                         }.onToolExecuted {
-                            write(gson.toJson(jsonObject {
+                            locker.lock()
+                            locker.write(gson.toJson(jsonObject {
                                 put("name",it.request().name())
                                 //需解析转换
                                 put("result",it.result())
                             }).wrapper("@tool-finish"))
-                            flush()
+                            locker.unlock()
                         }.onError {
                             it.printStackTrace()
-                            write((it.message?:"error").wrapper("@error"))
-                            flush()
+                            locker.lock()
+                            locker.write((it.message?:"error").wrapper("@error"))
+                            locker.unlock()
                             completion.complete(1)
                             close()
                         }.onCompleteResponse {

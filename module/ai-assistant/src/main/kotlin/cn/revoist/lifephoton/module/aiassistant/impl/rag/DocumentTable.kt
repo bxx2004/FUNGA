@@ -32,6 +32,7 @@ import java.util.concurrent.ConcurrentHashMap
 class DocumentTable private constructor(tableName: String) : Table<Nothing>("documents_${tableName}") {
     private constructor(tableIndex: Int): this(tableIndex.toString())
     init {
+        
         createIfNotExists(AIAssistant)
     }
     val id = long("id").primaryKey()

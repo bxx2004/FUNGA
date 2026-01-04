@@ -222,7 +222,9 @@ object GenePhenotypeService {
                     e.printStackTrace()
                 }
             }
-            funcGenes
+            funcGenes.filter {
+                it.phenotypes.isNotEmpty()
+            }
         }
     }
     fun imputationPredictGene(request: ImputationPredictGenesRequest, currentDegree:Int = 1): List<MergeData<HashMap<String, Any>>> {

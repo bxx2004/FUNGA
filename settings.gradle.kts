@@ -10,3 +10,4 @@ findProject(":module:funga")?.name = "funga"
 
 include("module:homepage")
 include("module:ai-assistant")
+include("module:fungi-pattern")

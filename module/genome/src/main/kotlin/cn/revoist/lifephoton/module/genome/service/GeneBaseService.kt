@@ -93,7 +93,7 @@ object GeneBaseService {
                         }
 
                         "name" -> {
-                            conditions += GenomeGeneInfo.geneName eq request.data["gene_name"].toString()
+                            conditions += GenomeGeneInfo.geneName like "%" + request.data["gene_name"].toString() + "%"
                         }
                     }
                     if (request.data.containsKey("species_name")){

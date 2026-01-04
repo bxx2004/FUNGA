@@ -23,37 +23,41 @@ object Profile :RoutePage("profile/{user}",auth = true){
     }
 
     override suspend fun onGet(call: RoutingCall) {
-        val username = call.parameters["user"]
-        val ss = (call.sessions.get("user")?: UserSession("-1","-1")) as UserSession
-        val user = Tools.findUserByToken(ss.accessToken)
-        if (user == null){
-            call.error("Please login first")
-            return
-        }
-        if (username.isNullOrEmpty()){
-            call.error("Please enter a valid username")
-            return
-        }
-        if (username == "myself"){
-            val user = call.sessions.get("user")!! as UserSession
-            call.respond(
-                Tools.findUserByToken(user.accessToken)!!.toPayloadResponse(
-                excludes = arrayListOf("password","accessToken","refreshToken")
-            ))
-            return
-        }else{
-            if (user.group != "admin"){
-                call.error("Your group isn't the admin")
+        try {
+            val username = call.parameters["user"]
+            val ss = (call.sessions.get("user")?: UserSession("-1","-1")) as UserSession
+            val user = Tools.findUserByToken(ss.accessToken)
+            if (user == null){
+                call.error("Please login first")
                 return
             }
+            if (username.isNullOrEmpty()){
+                call.error("Please enter a valid username")
+                return
+            }
+            if (username == "myself"){
+                call.respond(
+                    Tools.findUserByToken(ss.accessToken)!!.toPayloadResponse(
+                        excludes = arrayListOf("password","accessToken","refreshToken")
+                    ))
+                return
+            }else{
+                if (user.group != "admin"){
+                    call.error("Your group isn't the admin")
+                    return
+                }
+            }
+            val userEntity = Tools.getUserById(username.toLong())?.toPayloadResponse(
+                excludes = arrayListOf("password","accessToken","refreshToken")
+            )
+            if (userEntity == null){
+                call.error("user is not exists")
+            }else{
+                call.respond(userEntity)
+            }
+        }catch (e:UnsupportedOperationException){
+
         }
-        val userEntity = Tools.getUserById(username.toLong())?.toPayloadResponse(
-             excludes = arrayListOf("password","accessToken","refreshToken")
-        )
-        if (userEntity == null){
-            call.error("user is not exists")
-        }else{
-            call.respond(userEntity)
-        }
+
     }
 }

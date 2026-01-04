@@ -13,6 +13,6 @@ class SortedGeneResult {
     val genes: List<String> = arrayListOf()
     @Description("降序排列对应的基因排序推理过程")
     val think: List<String> = arrayListOf()
-    @Description("对应的参考文献")
+    @Description("对应的参考文献，只能根据提示或历史对话寻找")
     val references = arrayListOf<String>()
 }

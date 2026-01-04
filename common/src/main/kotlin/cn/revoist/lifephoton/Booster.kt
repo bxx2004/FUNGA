@@ -27,6 +27,7 @@ import kotlin.reflect.jvm.kotlinFunction
  * @description: None
  */
 object Booster {
+    @JvmStatic
     fun main(args: Array<String>){
         startEngine(args)
     }

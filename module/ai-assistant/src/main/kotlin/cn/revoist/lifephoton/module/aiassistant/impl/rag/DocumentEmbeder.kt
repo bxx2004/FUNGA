@@ -3,9 +3,11 @@ package cn.revoist.lifephoton.module.aiassistant.impl.rag
 import cn.revoist.lifephoton.module.aiassistant.core.entity.EmbedDocument
 import cn.revoist.lifephoton.module.aiassistant.core.service.DocumentService
 import cn.revoist.lifephoton.tools.submit
+import dev.langchain4j.data.document.Document
 import dev.langchain4j.data.document.parser.apache.tika.ApacheTikaDocumentParser
 import dev.langchain4j.data.document.splitter.DocumentSplitters
 import dev.langchain4j.data.segment.TextSegment
+import java.io.File
 
 
 /**
@@ -55,5 +57,7 @@ object DocumentEmbeder {
         res.metadata().put("doc_id",ed.docId).put("uploader",ed.uploader).put("citation",ed.citation)
         return splitter.split(res)
     }
-
+    fun parse(file: File): Document{
+        return parser.parse(file.inputStream())
+    }
 }

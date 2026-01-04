@@ -7,6 +7,7 @@ import cn.revoist.lifephoton.module.aiassistant.core.entity.EmbedDocument
 import cn.revoist.lifephoton.module.aiassistant.impl.rag.DocumentEmbeder
 import cn.revoist.lifephoton.module.aiassistant.impl.rag.DocumentTable
 import cn.revoist.lifephoton.module.aiassistant.impl.rag.KnowledgeBase
+import cn.revoist.lifephoton.module.authentication.asUser
 import cn.revoist.lifephoton.module.authentication.data.table.hasFriend
 import cn.revoist.lifephoton.module.authentication.data.table.whoShareMe
 import cn.revoist.lifephoton.module.authentication.lastUserId
@@ -182,7 +183,6 @@ object DocumentService {
     fun deleteDocument(userId: Long,docId:String){
         val tables = arrayListOf<DocumentTable>()
         tables.add(DocumentTable.create(userId.computeTableIndex()))
-        tables.add(DocumentTable.public)
         tables.forEach {
             AIAssistant.dataManager.useDatabase()
                 .delete(
@@ -190,6 +190,11 @@ object DocumentService {
                 ){
                     (it.doc_id eq docId) and (it.uploader eq userId)
                 }
+        }
+        val knls = arrayListOf<KnowledgeBase>()
+        knls.add(KnowledgeBase.create(userId.computeTableIndex()))
+        knls.forEach {
+            it.removeDocument(docId,userId)
         }
     }
 
@@ -243,7 +248,7 @@ object DocumentService {
 
     fun nextNotEmbedDocument(isPublic:Boolean): EmbedDocument{
         val tables = if (!isPublic){
-            (0 until lastUserId().computeTableIndex()).map {
+            (0.. lastUserId().computeTableIndex()).map {
                 DocumentTable.create(it)
             }
         }else{
